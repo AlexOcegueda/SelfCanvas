@@ -5,7 +5,7 @@ from flask_cors import CORS
 from importers import parse_mit_assignments, parse_mit_json, parse_text_syllabus
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "https://canvasocegueda.netlify.app"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///canvas.db'
 db = SQLAlchemy(app)
 
