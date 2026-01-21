@@ -1,10 +1,18 @@
+// src/routes/+page.ts
+export const load = async ({ fetch }) => {
+    try {
+        const response = await fetch('http://127.0.0.1:5000/api/courses');
+        
+        if (!response.ok) {
+            console.error("API Error:", response.statusText);
+            return { courses: [] }; // Return empty list if API fails
+        }
 
-export const load = async ({ fetch, params }) => {
-    // Replace '1' with params.id if you are using dynamic routing
-    const response = await fetch('http://127.0.0.1:5000/api/course/1'); 
-    const course = await response.json();
+        const courses = await response.json();
+        return { courses }; // Pass the list to the UI
 
-    return {
-        course
-    };
+    } catch (error) {
+        console.error("Fetch Error:", error);
+        return { courses: [] };
+    }
 };
