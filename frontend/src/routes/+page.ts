@@ -5,11 +5,11 @@ export const load = async ({ fetch }) => {
         
         if (!response.ok) {
             console.error("API Error:", response.statusText);
-            return { courses: [] }; // Return empty list if API fails
+            return { courses: [] }; 
         }
 
         const courses = await response.json();
-        return { courses }; // Pass the list to the UI
+        return { courses }; 
 
     } catch (error) {
         console.error("Fetch Error:", error);

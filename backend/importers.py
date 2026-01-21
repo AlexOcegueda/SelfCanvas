@@ -2,6 +2,41 @@ import json
 import re
 from bs4 import BeautifulSoup
 
+def parse_text_syllabus(raw_text):
+    """
+    Parses raw text copied from Coursera/edX.
+    Looks for patterns like 'Week 1', 'Module 1', etc.
+    """
+    assignments = []
+    
+    # 1. Split text into lines so we can process it line-by-line
+    lines = raw_text.split('\n')
+    
+    current_category = "General"
+    
+    # Regex to find headers like "Week 1", "Module 2", "Section 3"
+    # ^ means start of line, \d+ means a number
+    header_pattern = re.compile(r'^(Week|Module|Section|Chapter)\s+\d+', re.IGNORECASE)
+    
+    for line in lines:
+        line = line.strip()
+        if not line: continue # Skip empty lines
+
+        # If the line looks like a header (e.g. "Week 1: Intro"), update category
+        if header_pattern.match(line):
+            current_category = line
+            continue
+
+        # If it's a long-ish line, treat it as a topic/assignment
+        # (Short lines are usually UI junk like "Video" or "10 min")
+        if len(line) > 10 and len(line) < 100:
+            assignments.append({
+                "title": f"[{current_category}] {line}",
+                "content": line 
+            })
+
+    return assignments
+
 def parse_mit_json(json_content):
     # (No changes here, kept for completeness)
     try:
@@ -118,7 +153,6 @@ def parse_mit_assignments(html_content):
         href = link.get('href', '')
         if any(k in text.lower() for k in ['assignment', 'problem set', 'exam']):
             
-            # Also fix generic links here
             if href.startswith('http'):
                  final_link = href
             else:

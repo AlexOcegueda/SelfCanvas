@@ -1,11 +1,13 @@
 <script lang="ts">
     import { invalidateAll } from '$app/navigation';
-    export let data; // { courses: [...] }
+    export let data;
 
+    // --- CREATE COURSE STATE ---
     let showModal = false;
     let newCourseTitle = "";
     let isSubmitting = false;
 
+    // --- CREATE FUNCTION ---
     async function handleCreateCourse() {
         if (!newCourseTitle.trim()) return;
         
@@ -21,12 +23,26 @@
         isSubmitting = false;
 
         if (res.ok) {
-            // Success! Close modal, clear input, refresh list
             showModal = false;
             newCourseTitle = "";
             await invalidateAll(); 
         } else {
             alert("Error: " + result.error);
+        }
+    }
+
+    // --- DELETE FUNCTION (New!) ---
+    async function handleDelete(id: number) {
+        if (!confirm("Are you sure you want to delete this course? This cannot be undone.")) return;
+
+        const res = await fetch(`http://127.0.0.1:5000/api/courses/${id}`, {
+            method: 'DELETE'
+        });
+
+        if (res.ok) {
+            await invalidateAll(); 
+        } else {
+            alert("Failed to delete course");
         }
     }
 </script>
@@ -55,17 +71,27 @@
     {:else}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {#each data.courses as course}
-                <a 
-                    href="/course/{course.id}" 
-                    class="block border rounded-xl p-6 bg-white shadow-sm hover:shadow-md hover:-translate-y-1 transition duration-200 text-inherit no-underline"
-                >
-                    <div class="h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-inner">
-                        {course.title.slice(0, 2).toUpperCase()}
-                    </div>
+                <div class="relative group border rounded-xl bg-white shadow-sm hover:shadow-md transition duration-200">
                     
-                    <h2 class="text-xl font-bold text-gray-900 truncate">{course.title}</h2>
-                    <p class="text-gray-500 text-sm mt-1">View Assignments &rarr;</p>
-                </a>
+                    <button 
+                        on:click|preventDefault|stopPropagation={() => handleDelete(course.id)}
+                        class="absolute top-3 right-3 z-20 p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-full transition-colors cursor-pointer"
+                        title="Delete Course"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+
+                    <a href="/course/{course.id}" class="block p-6 text-inherit no-underline">
+                        <div class="h-24 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg mb-4 flex items-center justify-center text-white text-3xl font-bold shadow-inner">
+                            {course.title.slice(0, 2).toUpperCase()}
+                        </div>
+                        
+                        <h2 class="text-xl font-bold text-gray-900 truncate pr-8">{course.title}</h2>
+                        <p class="text-gray-500 text-sm mt-1">View Assignments &rarr;</p>
+                    </a>
+                </div>
             {/each}
         </div>
     {/if}
