@@ -13,7 +13,7 @@
         
         isSubmitting = true;
         
-        const res = await fetch('http://127.0.0.1:5000/api/courses', {
+        const res = await fetch('https://canvasocegueda.pythonanywhere.com/api/courses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: newCourseTitle })
@@ -31,11 +31,11 @@
         }
     }
 
-    // --- DELETE FUNCTION (New!) ---
+    // --- DELETE FUNCTION ---
     async function handleDelete(id: number) {
         if (!confirm("Are you sure you want to delete this course? This cannot be undone.")) return;
 
-        const res = await fetch(`http://127.0.0.1:5000/api/courses/${id}`, {
+        const res = await fetch(`https://canvasocegueda.pythonanywhere.com/${id}`, {
             method: 'DELETE'
         });
 

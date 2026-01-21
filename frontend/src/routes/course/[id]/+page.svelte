@@ -42,7 +42,7 @@
         data.course.modules = data.course.modules; // Trigger Svelte reactivity
 
         try {
-            const res = await fetch(`http://127.0.0.1:5000/api/modules/${module.id}/toggle`, {
+            const res = await fetch(`https://canvasocegueda.pythonanywhere.com/api/modules/${module.id}/toggle`, {
                 method: 'POST'
             });
             if (!res.ok) {
@@ -74,7 +74,7 @@
         uploadStatus = "Processing...";
 
         try {
-            const res = await fetch('http://127.0.0.1:5000/api/upload-mit-assignments', {
+            const res = await fetch('https://canvasocegueda.pythonanywhere.com/api/upload-mit-assignments', {
                 method: 'POST',
                 body: formData
             });
