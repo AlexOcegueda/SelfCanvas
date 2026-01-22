@@ -5,16 +5,14 @@ from flask_cors import CORS
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 
-# Import your parsers
 from importers import parse_mit_assignments, parse_mit_json, parse_text_syllabus
 
 app = Flask(__name__)
 
 # --- CONFIGURATION ---
-# Replace with your actual Netlify URL (no trailing slash)
 FRONTEND_URL = "https://canvasocegueda.netlify.app" 
 
-app.config['SECRET_KEY'] = 'change-this-to-something-secret' # Needed for session cookies
+app.config['SECRET_KEY'] = os.environ.get('FLASK_SECRET_KEY', 'dev-key-please-change')
 app.config['SESSION_COOKIE_SAMESITE'] = 'None' # Required for cross-site cookies (Netlify -> PythonAnywhere)
 app.config['SESSION_COOKIE_SECURE'] = True       # Required for Chrome/modern browsers
 
@@ -61,9 +59,15 @@ def load_user(user_id):
 @app.route('/api/register', methods=['POST'])
 def register():
     data = request.get_json()
-    username = data.get('username')
-    password = data.get('password')
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
 
+    # Simple Validation Checks
+    if not username or not password:
+        return jsonify({"error": "Username and Password are required"}), 400
+    
+    if len(password) < 6:
+        return jsonify({"error": "Password must be at least 6 characters"}), 400
     if User.query.filter_by(username=username).first():
         return jsonify({"error": "Username already exists"}), 400
 
