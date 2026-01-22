@@ -1,7 +1,9 @@
 // src/routes/course/[id]/+page.ts
 export const load = async ({ fetch, params }) => {
     
-    const response = await fetch(`https://canvasocegueda.pythonanywhere.com/api/course/${params.id}`);
+    const response = await fetch('https://canvasocegueda.pythonanywhere.com/api/courses', {
+            credentials: 'include' 
+        });
     
     if (!response.ok) {
         throw new Error("Course not found in database");

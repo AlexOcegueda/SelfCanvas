@@ -42,16 +42,16 @@
         data.course.modules = data.course.modules; // Trigger Svelte reactivity
 
         try {
+            // UPDATED: Added credentials: 'include'
             const res = await fetch(`https://canvasocegueda.pythonanywhere.com/api/modules/${module.id}/toggle`, {
-                method: 'POST'
+                method: 'POST',
+                credentials: 'include' 
             });
             if (!res.ok) {
                 // Revert if server failed
                 module.completed = !module.completed;
                 alert("Failed to save progress");
             } else {
-                // If we don't invalidate, the progress bar works via local reactivity
-                // If you want to be super safe, you can uncomment this:
                 // await invalidateAll(); 
             }
         } catch (e) {
@@ -74,9 +74,11 @@
         uploadStatus = "Processing...";
 
         try {
+            // UPDATED: Added credentials: 'include'
             const res = await fetch('https://canvasocegueda.pythonanywhere.com/api/upload-mit-assignments', {
                 method: 'POST',
-                body: formData
+                body: formData,
+                credentials: 'include'
             });
             const result = await res.json();
 

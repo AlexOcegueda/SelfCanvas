@@ -13,10 +13,12 @@
         
         isSubmitting = true;
         
+        // UPDATED: Added credentials: 'include'
         const res = await fetch('https://canvasocegueda.pythonanywhere.com/api/courses', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: newCourseTitle })
+            body: JSON.stringify({ title: newCourseTitle }),
+            credentials: 'include' 
         });
 
         const result = await res.json();
@@ -35,8 +37,10 @@
     async function handleDelete(id: number) {
         if (!confirm("Are you sure you want to delete this course? This cannot be undone.")) return;
 
+        // UPDATED: Added credentials: 'include'
         const res = await fetch(`https://canvasocegueda.pythonanywhere.com/api/courses/${id}`, {
-            method: 'DELETE'
+            method: 'DELETE',
+            credentials: 'include' 
         });
 
         if (res.ok) {
