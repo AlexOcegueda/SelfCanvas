@@ -1,12 +1,14 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
+import os
 
 from importers import parse_mit_assignments, parse_mit_json, parse_text_syllabus
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "https://canvasocegueda.netlify.app"}})
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///canvas.db'
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'canvas.db')
 db = SQLAlchemy(app)
 
 # --- MODELS ---
