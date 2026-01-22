@@ -99,7 +99,7 @@ def check_session():
 
 # --- APP ROUTES (Protected) ---
 
-@app.route('/api/courses', methods=['GET'])
+@app.route('/api/course', methods=['GET'])
 @login_required
 def get_courses():
     # Only show courses belonging to the current user
@@ -109,7 +109,7 @@ def get_courses():
         output.append({'id': course.id, 'title': course.title})
     return jsonify(output)
 
-@app.route('/api/courses', methods=['POST'])
+@app.route('/api/course', methods=['POST'])
 @login_required
 def create_course():
     data = request.get_json()
@@ -122,7 +122,7 @@ def create_course():
     db.session.commit()
     return jsonify({"message": "Created", "course": {"id": new_course.id, "title": new_course.title}}), 201
 
-@app.route('/api/courses/<int:course_id>', methods=['DELETE'])
+@app.route('/api/course/<int:course_id>', methods=['DELETE'])
 @login_required
 def delete_course(course_id):
     # Ensure user owns the course before deleting
@@ -131,7 +131,7 @@ def delete_course(course_id):
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
 
-@app.route('/api/courses/<int:course_id>', methods=['GET'])
+@app.route('/api/course/<int:course_id>', methods=['GET'])
 @login_required
 def get_course_details(course_id):
     # Ensure user owns the course
