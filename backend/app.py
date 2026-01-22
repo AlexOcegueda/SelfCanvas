@@ -99,29 +99,28 @@ def check_session():
 
 # --- APP ROUTES (Protected) ---
 
-@app.route('/api/course', methods=['GET'])
+@app.route('/api/courses', methods=['GET', 'POST'])
 @login_required
-def get_courses():
-    # Only show courses belonging to the current user
-    courses = Course.query.filter_by(user_id=current_user.id).all()
-    output = []
-    for course in courses:
-        output.append({'id': course.id, 'title': course.title})
-    return jsonify(output)
+def handle_courses():
+    # Handle GET: List all courses
+    if request.method == 'GET':
+        courses = Course.query.filter_by(user_id=current_user.id).all()
+        output = []
+        for course in courses:
+            output.append({'id': course.id, 'title': course.title})
+        return jsonify(output)
 
-@app.route('/api/courses', methods=['POST'])
-@login_required
-def create_course():
-    data = request.get_json()
-    title = data.get('title', '').strip()
-    if not title: return jsonify({"error": "Title required"}), 400
+    # Handle POST: Create a new course
+    if request.method == 'POST':
+        data = request.get_json()
+        title = data.get('title', '').strip()
+        if not title: return jsonify({"error": "Title required"}), 400
 
-    # Link new course to current_user
-    new_course = Course(title=title, owner=current_user)
-    db.session.add(new_course)
-    db.session.commit()
-    return jsonify({"message": "Created", "course": {"id": new_course.id, "title": new_course.title}}), 201
-
+        new_course = Course(title=title, owner=current_user)
+        db.session.add(new_course)
+        db.session.commit()
+        return jsonify({"message": "Created", "course": {"id": new_course.id, "title": new_course.title}}), 201
+        
 @app.route('/api/courses/<int:course_id>', methods=['DELETE'])
 @login_required
 def delete_course(course_id):

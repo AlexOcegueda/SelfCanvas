@@ -37,7 +37,6 @@
     async function handleDelete(id: number) {
         if (!confirm("Are you sure you want to delete this course? This cannot be undone.")) return;
 
-        // UPDATED: Added credentials: 'include'
         const res = await fetch(`https://canvasocegueda.pythonanywhere.com/api/courses/${id}`, {
             method: 'DELETE',
             credentials: 'include' 
