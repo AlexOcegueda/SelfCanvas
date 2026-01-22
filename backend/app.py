@@ -12,19 +12,20 @@ app = Flask(__name__)
 
 # --- CONFIGURATION ---
 # Replace with your actual Netlify URL (no trailing slash)
-# Add 'http://localhost:5173' for local development
 FRONTEND_URL = "https://canvasocegueda.netlify.app" 
 
 app.config['SECRET_KEY'] = 'change-this-to-something-secret' # Needed for session cookies
 app.config['SESSION_COOKIE_SAMESITE'] = 'None' # Required for cross-site cookies (Netlify -> PythonAnywhere)
-app.config['SESSION_COOKIE_SECURE'] = True      # Required for Chrome/modern browsers
+app.config['SESSION_COOKIE_SECURE'] = True       # Required for Chrome/modern browsers
 
 # Database Config
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'canvas.db')
 
 # CORS Config (MUST enable credentials for cookies to work)
-CORS(app, resources={r"/api/*": {"origins": [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"]}}, supports_credentials=True)
+CORS(app, 
+     resources={r"/api/*": {"origins": [FRONTEND_URL, "http://localhost:5173", "http://localhost:3000"]}}, 
+     supports_credentials=True)
 
 db = SQLAlchemy(app)
 login_manager = LoginManager()
@@ -149,27 +150,70 @@ def get_course_details(course_id):
 @login_required
 def upload_mit_assignments():
     course_id = request.form.get('course_id')
-    # Verify ownership
+    
+    # 1. Security Check: Verify ownership
     course = Course.query.filter_by(id=course_id, user_id=current_user.id).first()
     if not course:
         return jsonify({"error": "Course not found or access denied"}), 403
 
-    # ... (Keep existing parsing logic below unchanged) ...
-    # (Since this response is getting long, keep your existing logic for parsing files/text here)
-    # Just make sure to return jsonify(...) at the end.
-    
-    # [PASTE YOUR EXISTING PARSING/SAVING LOGIC HERE]
-    # For brevity, I am omitting the 50 lines of parsing code, but YOU MUST KEEP IT.
-    
-    # ...
-    
-    return jsonify({"message": "Import successful"})
+    # 2. Check Input (File or Text)
+    file = request.files.get('file')
+    raw_text = request.form.get('raw_text')
 
-# ... (Keep toggle_module but ensure user owns the module's course) ...
+    extracted_data = []
+
+    # Path A: File Upload
+    if file:
+        filename = file.filename.lower()
+        content = file.read().decode('utf-8', errors='ignore')
+        
+        if filename.endswith('.json'):
+            extracted_data = parse_mit_json(content)
+        elif filename.endswith('.html') or filename.endswith('.htm'):
+            extracted_data = parse_mit_assignments(content)
+        else:
+            return jsonify({"error": "Unsupported file type"}), 400
+
+    # Path B: Text Paste
+    elif raw_text:
+        extracted_data = parse_text_syllabus(raw_text)
+
+    else:
+        return jsonify({"error": "No file or text provided"}), 400
+
+    # Handle Errors from Parser
+    if isinstance(extracted_data, dict) and "error" in extracted_data:
+        return jsonify(extracted_data), 400
+    
+    if not extracted_data:
+        return jsonify({"message": "Parsed but found 0 items."}), 200
+
+    # 3. Save to DB
+    try:
+        saved_count = 0
+        for item in extracted_data:
+            exists = Module.query.filter_by(course_id=course_id, title=item['title']).first()
+            if not exists:
+                new_module = Module(
+                    course_id=course_id, 
+                    title=item['title'],
+                    content=item['content']
+                )
+                db.session.add(new_module)
+                saved_count += 1
+        
+        db.session.commit()
+        return jsonify({"message": f"Successfully imported {saved_count} items."})
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)}), 500
+
 @app.route('/api/modules/<int:module_id>/toggle', methods=['POST'])
 @login_required
 def toggle_module(module_id):
     module = Module.query.get_or_404(module_id)
+    # Security Check: Ensure module belongs to a course owned by current_user
     if module.course.user_id != current_user.id:
         return jsonify({"error": "Unauthorized"}), 403
         
