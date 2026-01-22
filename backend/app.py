@@ -130,7 +130,7 @@ def delete_course(course_id):
     db.session.commit()
     return jsonify({"message": "Deleted"}), 200
 
-@app.route('/api/courses/<int:course_id>', methods=['GET'])
+@app.route('/api/course/<int:course_id>', methods=['GET'])
 @login_required
 def get_course_details(course_id):
     # Ensure user owns the course
